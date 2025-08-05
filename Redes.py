@@ -45,9 +45,18 @@ def config_rede():
 #essa parte de baixo vai pro main
 ip, familia, protocolo, sock = config_rede()
 
+
 #tenho que importar a biblioteca ipaddress
 #vai ser perguntado a pessoa a porta (1014-49151) e o seu IP
 def hospedar_partida(host, porta, sock, familia, protocolo):
+  
+  while True:
+    porta = input("\nDigite a porta que deseja iniciar o servidor (1024 - 65535): ").strip()
+    if porta.isdigit() and 1024 <= int(porta) <= 65535:
+      porta = int(porta)
+      break
+  print("-> Porta inválida. Digite apenas números entre 1024 e 65535.")
+
   try:
     sock.bind((host, porta))
     if (familia == socket.AF_INET):
