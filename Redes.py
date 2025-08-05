@@ -48,7 +48,7 @@ ip, familia, protocolo, sock = config_rede()
 
 #tenho que importar a biblioteca ipaddress
 #vai ser perguntado a pessoa a porta (1014-49151) e o seu IP
-def hospedar_partida(host, porta, sock, familia, protocolo):
+def hospedar_partida(host, sock, familia, protocolo):
   
   while True:
     porta = input("\nDigite a porta que deseja iniciar o servidor (1024 - 65535): ").strip()
@@ -60,10 +60,10 @@ def hospedar_partida(host, porta, sock, familia, protocolo):
   try:
     sock.bind((host, porta))
     if (familia == socket.AF_INET):
-        print("Host IPv4 criado com sucesso. IP: {host} - Porta: {porta}")
-    else: print("Host IPv6 criado com sucesso. IP: {host} - Porta: {porta}")
+        print(f"Host IPv4 criado com sucesso. IP: {host} - Porta: {porta}")
+    else: print(f"Host IPv6 criado com sucesso. IP: {host} - Porta: {porta}")
   except Exception as e:
-    print("Host não foi criado, insira o seu endereço IP correto e certifique-se de que a porta esteja na faixa de 1024-49151")
+    raise ValueError("Host não foi criado, insira o seu endereço IP correto e certifique-se de que a porta esteja na faixa de 1024-49151")
 
   #<-- SE FOR TCP -->
   if (protocolo == socket.SOCK_STREAM):
@@ -72,12 +72,14 @@ def hospedar_partida(host, porta, sock, familia, protocolo):
 
     try:
       conexao, (cliente_ip, cliente_porta) = sock.accept()
-      print("Servidor TCP conectado com IP {cliente_ip} da porta {cliente_porta}")
+      print(f"Servidor TCP conectado com IP {cliente_ip} da porta {cliente_porta}")
       return conexao
     except Exception as e:
       print("Não foi possível estabelecer conexão com jogador")
 
   #<-- SE FOR UDP -->
-  elif(protocolo == socket.SOCK_DGRAM):   #ajeitar
+  elif(protocolo == socket.SOCK_DGRAM): 
     return sock
     print("Servidor UDP pronto para receber mensagens")
+
+hospedar_partida(ip, sock, familia, protocolo)
