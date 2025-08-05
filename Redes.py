@@ -48,22 +48,28 @@ ip, familia, protocolo, sock = config_rede()
 
 #tenho que importar a biblioteca ipaddress
 #vai ser perguntado a pessoa a porta (1014-49151) e o seu IP
-def hospedar_partida(host, sock, familia, protocolo):
+def hospedar_partida(host_ip, sock, familia, protocolo):
   
   while True:
     porta = input("\nDigite a porta que deseja iniciar o servidor (1024 - 65535): ").strip()
     if porta.isdigit() and 1024 <= int(porta) <= 65535:
       porta = int(porta)
       break
-  print("-> Porta inválida. Digite apenas números entre 1024 e 65535.")
+    print("-> Porta inválida. Digite apenas números entre 1024 e 65535.\n10.65.1.113")
 
   try:
-    sock.bind((host, porta))
-    if (familia == socket.AF_INET):
-        print(f"Host IPv4 criado com sucesso. IP: {host} - Porta: {porta}")
-    else: print(f"Host IPv6 criado com sucesso. IP: {host} - Porta: {porta}")
+    if familia == socket.AF_INET6:
+      sock.bind(str((host_ip), porta, 0, 0))
+    else:
+      sock.bind((str(host_ip), porta))
+    tipo_ip = "IPv6" if familia == socket.AF_INET6 else "IPv4"
+    print(f"Host {tipo_ip} criado com sucesso. IP: {host_ip} - Porta: {porta}")
   except Exception as e:
-    raise ValueError("Host não foi criado, insira o seu endereço IP correto e certifique-se de que a porta esteja na faixa de 1024-49151")
+
+        raise ValueError(
+            "O Host não foi criado. Insira o seu endereço IP corretamente e "
+            "certifique-se de que a porta esteja na faixa de 1024-65535"
+        ) from e
 
   #<-- SE FOR TCP -->
   if (protocolo == socket.SOCK_STREAM):
