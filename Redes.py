@@ -1,17 +1,31 @@
 import socket
+import ipaddress
 
-#<--- Escolha das configurações de rede no menu --->
+#<--- Escolha das configurações de rede --->
 def config_rede():
+  
+  #<-- verificar o ip digitado>
   while True:
-    t_ip = input("Escolha a versão do protocolo de internet (IP), digite 'ipv4' ou 'ipv6': ").lower().strip()
+        end_ip = input("Digite o seu endereço IP. Ex.: '127.0.0.1' ou 'fe80::1': ").strip()
+        try:
+            ip = ipaddress.ip_address(end_ip)
+            print(f"Endereço IP válido: {ip}")
+            break
+        except ValueError:
+            print("Endereço IP inválido. Digite-o corretamente")
+  while True:
+    t_ip = input("\nEscolha a versão do protocolo de internet (IP) para a criação do socket, digite 'ipv4' ou 'ipv6': ").lower().strip()
 
-    if(t_ip == "ipv4"):
-      familia = socket.AF_INET
-      break                              #Uma pessoa pode escolher ipv6 mesmo sendo ipv4?
-    elif(t_ip == "ipv6"):
-      familia = socket.AF_INET6
-      break
-    else: print("-> Versão do IP inválida, digite exclusivamente 'ipv4' ou 'ipv6': ")
+    if (t_ip == "ipv4" and isinstance(ip, ipaddress.IPv4Address)):
+            familia = socket.AF_INET
+            break
+
+    elif (t_ip == "ipv6" and isinstance(ip, ipaddress.IPv6Address)):
+            familia = socket.AF_INET6
+            break
+
+    else:
+       print("\n-> Versão do IP inválida. Digite exclusivamente 'ipv4' ou 'ipv6', e certifique-se de que a versão do seu endereço IP seja condizente com sua escolha.")
 
   while True:
     protc = input("Escolha o protocolo de rede, digite 'tcp' ou 'udp': ").lower().strip()
@@ -24,11 +38,12 @@ def config_rede():
     else: print("-> Tipo de protocolo inválido, digite exclusivamente 'udp' ou 'tcp': ")
 
   sock = socket.socket(familia, protocolo)
+  sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
   print("-> Socket criado com sucesso")
-  return familia, protocolo, sock
+  return ip, familia, protocolo, sock
 
 #essa parte de baixo vai pro main
-familia, protocolo, sock = config_rede()
+ip, familia, protocolo, sock = config_rede()
 
 #tenho que importar a biblioteca ipaddress
 #vai ser perguntado a pessoa a porta (1014-49151) e o seu IP
