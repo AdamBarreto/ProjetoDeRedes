@@ -97,12 +97,12 @@ def conectar_partida(familia, protocolo):
     if (protocolo == socket.SOCK_STREAM):
       sock = socket.socket(str(familia), protocolo)
       sock.connect((str(destino_ip), destino_porta))
-      print(f"Conectado ao servidor TCP no IP {destino_ip} na porta {porta}")
+      print(f"Conectado ao servidor TCP no IP {destino_ip} na porta {destino_porta}")
       return sock
 
     elif (protocolo == socket.SOCK_DGRAM):
       sock = socket.socket(familia, protocolo)
-      print(f"Conectado ao servidor UDP no IP {destino_ip} na porta {porta}")
+      print(f"Conectado ao servidor UDP no IP {destino_ip} na porta {destino_porta}")
       return sock
 
   except Exception as e:
