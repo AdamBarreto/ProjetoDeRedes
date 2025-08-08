@@ -139,3 +139,32 @@ def enviar_mensagem(sock, dados, protocolo, destino):
     except Exception as e:
         print(f"Erro ao enviar mensagem: {e}")
 
+
+
+def receber_mensagem(sock, protocolo, buffer_size=4096):
+    print("Aguardando mensagem [...]")
+    try:
+        if protocolo == socket.SOCK_STREAM:
+            mensagem = sock.recv(buffer_size)
+            dados = json.loads(mensagem.decode('utf-8'))
+            print("Mensagem recebida com sucesso.")
+            return dados, None
+
+        elif protocolo == socket.SOCK_DGRAM:
+            mensagem, origem = sock.recvfrom(buffer_size)
+            dados = json.loads(mensagem.decode('utf-8'))
+            print(f"Mensagem recebida de {origem}")
+            return dados, origem
+
+    except Exception as e:
+        print(f"Erro ao receber mensagem: {e}")
+        return None, None
+
+#isso aq vai por main:
+if protocolo == socket.SOCKET_STREAM:
+  dados, _ = receber_mensagem(sock, protocolo)
+  enviar_mensagem(sock, {"tabuleiro": tabuleiro}, socket.SOCK_STREAM)
+
+if protocolo == socket.SOCKET_DGRAM:
+  dados, destino = receber_mensagem(sock, protocolo)
+  enviar_mensagem(sock, {"tabuleiro": tabuleiro}, socket.SOCK_DGRAM)
