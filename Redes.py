@@ -1,6 +1,6 @@
 import socket
 import ipaddress
-
+import json
 #<--- Escolha das configurações de rede --->
 def config_rede():
   
@@ -46,7 +46,6 @@ def config_rede():
 ip, familia, protocolo, sock = config_rede()
 
 
-#tenho que importar a biblioteca ipaddress
 #vai ser perguntado a pessoa a porta (1014-49151) e o seu IP
 def hospedar_partida(host_ip, sock, familia, protocolo):
   
@@ -71,42 +70,72 @@ def hospedar_partida(host_ip, sock, familia, protocolo):
             "certifique-se de que a porta esteja na faixa de 1024-65535"
         ) from e
 
-  #<-- SE FOR TCP -->
+  # TCP
   if (protocolo == socket.SOCK_STREAM):
     sock.listen(1)
     print("Esperando conexão com um jogador [...]")
 
     try:
-      conexao, (cliente_ip, cliente_porta) = sock.accept()
-      print(f"Servidor TCP conectado com IP {cliente_ip} da porta {cliente_porta}")
-      return conexao
+      conexao, (cliente_ip, porta) = sock.accept()
+      print(f"Servidor TCP conectado com IP {cliente_ip} da porta {porta}")
+      return conexao, (cliente_ip, porta)
     except Exception as e:
       print("Não foi possível estabelecer conexão com jogador")
 
-  #<-- SE FOR UDP -->
+  # UDP
   elif(protocolo == socket.SOCK_DGRAM): 
-    return sock
+    return sock, porta
     print("Servidor UDP pronto para receber mensagens")
+
+sock, coisado = hospedar_partida(ip, sock, familia, protocolo)
+if (protocolo == socket.SOCK_DGRAM):
+  destino_ip = input("Digite o endereço IP do computador que está se conectando ao servidor: ")
+  destino = (destino_ip, coisado)
+else:
+  destino = coisado
 
 
 def conectar_partida(familia, protocolo):
   destino_ip = input("Digite o endereço IP do computador que está hospedando a partida: ")
-  destino_porta = input("Digite a porta do socket do computador que está hospedando a partida: ")
+
+  while True:
+    destino_porta = input("Digite a porta do socket do computador que está hospedando a partida: ").strip()
+    if destino_porta.isdigit() and 1024 <= int(destino_porta) <= 65535:
+        destino_porta = int(destino_porta)
+        break
+    print("-> Porta inválida. Digite apenas números entre 1024 e 65535.")
 
   try:
     if (protocolo == socket.SOCK_STREAM):
       sock = socket.socket(str(familia), protocolo)
       sock.connect((str(destino_ip), destino_porta))
       print(f"Conectado ao servidor TCP no IP {destino_ip} na porta {destino_porta}")
-      return sock
+      
 
     elif (protocolo == socket.SOCK_DGRAM):
       sock = socket.socket(familia, protocolo)
       print(f"Conectado ao servidor UDP no IP {destino_ip} na porta {destino_porta}")
-      return sock
+    return sock, (destino_ip, destino_porta)
 
   except Exception as e:
     print(f"Erro ao conectar ao servidor: {e}")
-    return None
-  
-conectar_partida(familia, protocolo)
+    return None, None
+
+
+sock, destino = conectar_partida(familia, protocolo)
+
+def enviar_mensagem(sock, dados, protocolo, destino):
+    try:
+        mensagem = json.dumps(dados).encode('utf-8')
+
+        if protocolo == socket.SOCK_STREAM:
+            sock.sendall(mensagem)
+
+        elif protocolo == socket.SOCK_DGRAM:
+            sock.sendto(mensagem, destino)
+
+        print("Mensagem enviada com sucesso.")
+
+    except Exception as e:
+        print(f"Erro ao enviar mensagem: {e}")
+
