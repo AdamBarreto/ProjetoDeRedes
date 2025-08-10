@@ -282,5 +282,5 @@ def main():
                         if moves:
                             selected_piece = piece
                             valid_moves = moves
-
+#
 main()
