@@ -22,3 +22,4 @@ if esc == 'h':
 elif esc == 'c':
     sock, destino = Redes.conectar_partida(familia, protocolo)
 
+# Ainda faltam implementar mais coisas, como o envio e recebimento de mensagens
