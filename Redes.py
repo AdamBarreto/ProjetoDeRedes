@@ -42,11 +42,8 @@ def config_rede():
   print("-> Socket criado com sucesso")
   return ip, familia, protocolo, sock
 
-#essa parte de baixo vai pro main
-ip, familia, protocolo, sock = config_rede()
 
 
-#vai ser perguntado a pessoa a porta (1014-49151) e o seu IP
 def hospedar_partida(host_ip, sock, familia, protocolo):
   
   while True:
@@ -87,12 +84,7 @@ def hospedar_partida(host_ip, sock, familia, protocolo):
     return sock, porta
     print("Servidor UDP pronto para receber mensagens")
 
-sock, coisado = hospedar_partida(ip, sock, familia, protocolo)
-if (protocolo == socket.SOCK_DGRAM):
-  destino_ip = input("Digite o endereço IP do computador que está se conectando ao servidor: ")
-  destino = (destino_ip, coisado)
-else:
-  destino = coisado
+
 
 
 def conectar_partida(familia, protocolo):
@@ -107,7 +99,7 @@ def conectar_partida(familia, protocolo):
 
   try:
     if (protocolo == socket.SOCK_STREAM):
-      sock = socket.socket(str(familia), protocolo)
+      sock = socket.socket(familia, protocolo)
       sock.connect((str(destino_ip), destino_porta))
       print(f"Conectado ao servidor TCP no IP {destino_ip} na porta {destino_porta}")
       
@@ -120,9 +112,7 @@ def conectar_partida(familia, protocolo):
   except Exception as e:
     print(f"Erro ao conectar ao servidor: {e}")
     return None, None
-
-
-sock, destino = conectar_partida(familia, protocolo)
+  
 
 def enviar_mensagem(sock, dados, protocolo, destino):
     try:
@@ -160,11 +150,39 @@ def receber_mensagem(sock, protocolo, buffer_size=4096):
         print(f"Erro ao receber mensagem: {e}")
         return None, None
 
-#isso aq vai por main:
-if protocolo == socket.SOCKET_STREAM:
-  dados, _ = receber_mensagem(sock, protocolo)
-  enviar_mensagem(sock, {"tabuleiro": tabuleiro}, socket.SOCK_STREAM)
+ip, familia, protocolo, sock = config_rede()
 
-if protocolo == socket.SOCKET_DGRAM:
-  dados, destino = receber_mensagem(sock, protocolo)
-  enviar_mensagem(sock, {"tabuleiro": tabuleiro}, socket.SOCK_DGRAM)
+#definir se vai hospedar ou conectar
+esc = input("Você quer hospedar ou conectar a uma partida? (h/c): ").strip().lower()
+if esc == 'h':
+    sock, coisado = hospedar_partida(ip, sock, familia, protocolo)
+    if (protocolo == socket.SOCK_DGRAM):
+        destino_ip = input("Digite o endereço IP do computador que está se conectando ao servidor: ")
+        destino = (destino_ip, coisado)
+    else:
+        destino = coisado
+
+elif esc == 'c':
+    sock, destino = conectar_partida(familia, protocolo)
+
+if sock is None:
+    print("Não foi possível estabelecer conexão. Encerrando.")
+    exit()
+
+# Define quem começa enviando
+turno_envio = True if esc == 'h' else False  # Só o host pode enviar primeiro
+
+while True:
+    if turno_envio:
+        mens = input("Digite a mensagem que deseja enviar: ")
+        enviar_mensagem(sock, {"mensagem": mens}, protocolo, destino)
+        turno_envio = False  # Depois de enviar, espera receber
+
+    else:
+        dados, origem = receber_mensagem(sock, protocolo)
+        if dados:
+            print(f"Mensagem recebida: {dados['mensagem']}")
+        turno_envio = True  # Depois de receber, pode enviar
+            
+
+
