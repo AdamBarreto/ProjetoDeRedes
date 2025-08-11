@@ -1,5 +1,6 @@
 import pygame
 import sys
+import json
 
 # Dimensões da janela
 WIDTH, HEIGHT = 800, 800  
@@ -13,6 +14,8 @@ WHITE = (255, 255, 255)      # Peças brancas
 BLACK = (0, 0, 0)            # Peças pretas
 GOLD = (255, 215, 0)         # Cor para coroas das damas
 RED = (255, 0, 0)            # Texto/avisos
+
+COR_LOCAL = WHITE
 
 # Inicializa o Pygame
 pygame.init()
@@ -49,21 +52,26 @@ class Piece:
         self.row = row
         self.col = col
 
-    def draw(self, win):
+    def draw(self, win, row=None, col=None):
+        draw_row = row if row is not None else self.row
+        draw_col = col if col is not None else self.col
+        
+        # gambiarra para inverter a posição das peças
+
         # Calcula o raio do círculo (peça)
         radius = SQUARE_SIZE // 2 - self.PADDING
         # Desenha contorno preto
         pygame.draw.circle(
             win, BLACK,
-            (self.col * SQUARE_SIZE + SQUARE_SIZE // 2,
-             self.row * SQUARE_SIZE + SQUARE_SIZE // 2),
+            (draw_col * SQUARE_SIZE + SQUARE_SIZE // 2,
+             draw_row * SQUARE_SIZE + SQUARE_SIZE // 2),
             radius + self.OUTLINE
         )
         # Desenha o círculo da peça
         pygame.draw.circle(
             win, self.color,
-            (self.col * SQUARE_SIZE + SQUARE_SIZE // 2,
-             self.row * SQUARE_SIZE + SQUARE_SIZE // 2),
+            (draw_col * SQUARE_SIZE + SQUARE_SIZE // 2,
+             draw_row * SQUARE_SIZE + SQUARE_SIZE // 2),
             radius
         )
         # Se for dama desenha uma bola dourado no centro
@@ -105,14 +113,15 @@ class Board:
                 else:
                     self.board[row].append(0)  # Casa vazia
 
-    def draw(self, win):
+    def draw(self, win, COR_LOCAL, turn):
         # Desenha o tabuleiro e as peças
         self.draw_squares(win)
         for row in range(ROWS):
             for col in range(COLS):
+                draw_row, draw_col = (7 - row, 7 - col) if COR_LOCAL == BLACK else (row, col)
                 piece = self.board[row][col]
                 if piece != 0:
-                    piece.draw(win)
+                    piece.draw(win, draw_row, draw_col)
 
     def move(self, piece, row, col):
         # Troca a posição da peça na matriz
@@ -214,8 +223,48 @@ def draw_winner(win, winner):
     pygame.display.update()
     pygame.time.delay(3000)
 
+# FUNÇÕES PARA EXPORTAR E IMPORTAR O ESTADO DO JOGO
+def export_board_state(board, turn):
+    pieces = []
+    for row in range(ROWS):
+        for col in range(COLS):
+            piece = board.get_piece(row, col)
+            if piece != 0:
+                pieces.append({
+                    'row': piece.row,
+                    'col': piece.col,
+                    'color': 'white' if piece.color == WHITE else 'black',
+                    'king': piece.king
+                })
+    board_state = {
+        'turn': 'white' if turn == WHITE else 'black',
+        'pieces': pieces
+    }
+
+    return json.dumps(board_state)
+
+#json_data = export_board_state(board, turn)
+
+def import_board_state(board, json_data):
+    data = json.loads(json_data)
+    turn = WHITE if data['turn'] == 'white' else BLACK
+
+    board.board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+    for piece_info in data['pieces']:
+        row = piece_info['row']
+        col = piece_info['col']
+        color = WHITE if piece_info['color'] == 'white' else BLACK
+        piece = Piece(row, col, color)
+        if piece_info['king']:
+            piece.make_king()
+        board.board[row][col] = piece
+    return turn
+
+#turn = import_board_state(board, json_data)
+
+
 # FUNÇÃO PRINCIPAL DO JOGO
-def main():
+def main(COR_LOCAL):
     run = True
     clock = pygame.time.Clock()
     board = Board()      # Cria o tabuleiro
@@ -226,7 +275,7 @@ def main():
 
     while run:
         clock.tick(60)  # Limita FPS a 60
-        board.draw(WIN)  # Desenha o tabuleiro e peças
+        board.draw(WIN, COR_LOCAL, turn)  # Desenha o tabuleiro e peças
         draw_turn_indicator(WIN, turn)
         pygame.display.update()
 
@@ -249,6 +298,8 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 row, col = pos[1] // SQUARE_SIZE, pos[0] // SQUARE_SIZE
+                if COR_LOCAL == BLACK:
+                    col, row = 7 - col, 7 - row
 
                 if selected_piece:
                     if (row, col) in valid_moves:
@@ -283,4 +334,4 @@ def main():
                             selected_piece = piece
                             valid_moves = moves
 
-main()
+main(COR_LOCAL)
