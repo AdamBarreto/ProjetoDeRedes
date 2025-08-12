@@ -2,14 +2,16 @@
 ### É um jogo de damas, onde é necessário ter dois computadores para se conectarem através de um socket, um dos jogadores pode hospedar a partida e outro se conectar, para assim possibilitar que duas pessoas joguem. Com suporte à IPv6 e IPv4, funciona com os protocolos UDP e TCP.
 
 ## Requisitos para jogar
-+ Ter o python
-+ Ter o pygame
++ Ter o python com uma versão compatível para o seu computador. Site do python para download: https://www.python.org/
++ Ter o pygame. Site do pygame para download: https://www.pygame.org/downloads.shtml
 + Os dois dispositivos devem estar conectados na mesma rede local
 
 ## Como jogar?
 ### Para jogar o jogo basta clicar com o mouse na peça que deseja mover, logo em seguida o local desejado. É isso, você aprendeu a jogar o nosso jogo de damas, o resto são regras do jogo de damas convencional.
-
 <br>
+
+
+## Componentes do projeto
 <table>
  <tr>
   <td> Adam</td>
