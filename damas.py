@@ -52,7 +52,7 @@ class Piece:
         self.row = row
         self.col = col
 
-    def draw(self, win, row=None, col=None):
+    def draw(self, win, row=None, col=None): 
         draw_row = row if row is not None else self.row
         draw_col = col if col is not None else self.col
         
@@ -113,7 +113,7 @@ class Board:
                 else:
                     self.board[row].append(0)  # Casa vazia
 
-    def draw(self, win, COR_LOCAL, turn):
+    def draw(self, win, COR_LOCAL, turn): #não precisa do turn
         # Desenha o tabuleiro e as peças
         self.draw_squares(win)
         for row in range(ROWS):
@@ -224,7 +224,7 @@ def draw_winner(win, winner):
     pygame.time.delay(3000)
 
 # FUNÇÕES PARA EXPORTAR E IMPORTAR O ESTADO DO JOGO
-def export_board_state(board, turn):
+def export_board_state(board, turn): #não vai precisar mais do turn
     pieces = []
     for row in range(ROWS):
         for col in range(COLS):
@@ -237,8 +237,8 @@ def export_board_state(board, turn):
                     'king': piece.king
                 })
     board_state = {
-        'turn': 'white' if turn == WHITE else 'black',
-        'pieces': pieces
+        'turn': 'white' if turn == WHITE else 'black',    # não precisa mais indicar o turno do jogador, já que
+        'pieces': pieces                                  # já vai ser definido quem vai ser o branco e quem vai ser o preto
     }
 
     return json.dumps(board_state)
@@ -258,7 +258,7 @@ def import_board_state(board, json_data):
         if piece_info['king']:
             piece.make_king()
         board.board[row][col] = piece
-    return turn
+    return turn #não precisa mais do turn
 
 #turn = import_board_state(board, json_data)
 
@@ -275,7 +275,7 @@ def main(COR_LOCAL):
 
     while run:
         clock.tick(60)  # Limita FPS a 60
-        board.draw(WIN, COR_LOCAL, turn)  # Desenha o tabuleiro e peças
+        board.draw(WIN, COR_LOCAL, turn)  # Desenha o tabuleiro e peças (não precisa do turn --> ajeitar)
         draw_turn_indicator(WIN, turn)
         pygame.display.update()
 
@@ -284,7 +284,7 @@ def main(COR_LOCAL):
 
         # Se não houver movimentos, fim de jogo
         if not all_moves:
-            draw_winner(WIN, BLACK if turn == WHITE else WHITE)
+            draw_winner(WIN, BLACK if turn == WHITE else WHITE) 
             run = False
             continue
 
