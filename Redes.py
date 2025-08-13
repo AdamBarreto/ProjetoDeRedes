@@ -11,6 +11,8 @@ def config_rede():
             ip = ipaddress.ip_address(end_ip)
             print(f"Endereço IP válido: {ip}")
             break
+        
+        # mensagem de erro
         except ValueError:
             print("Endereço IP inválido. Digite-o corretamente")
   while True:
@@ -60,35 +62,49 @@ def hospedar_partida(host_ip, sock, familia, protocolo):
       sock.bind((str(host_ip), porta))
     tipo_ip = "IPv6" if familia == socket.AF_INET6 else "IPv4"
     print(f"Host {tipo_ip} criado com sucesso. IP: {host_ip} - Porta: {porta}")
+  
+  # mensagem de erro
   except Exception as e:
 
         raise ValueError(
             "O Host não foi criado. Insira o seu endereço IP corretamente e "
-            "certifique-se de que a porta esteja na faixa de 1024-65535"
+            "certifique-se de que a porta esteja na faixa de 1024-65535."
         ) from e
 
   # TCP
   if (protocolo == socket.SOCK_STREAM):
     sock.listen(1)
-    print("Esperando conexão com um jogador [...]")
+    print("\nEsperando conexão com um jogador [...]")
 
     try:
       conexao, (cliente_ip, porta) = sock.accept()
       print(f"Servidor TCP conectado com IP {cliente_ip} da porta {porta}")
       return conexao, (cliente_ip, porta)
+    
+    # mensagem de erro
     except Exception as e:
-      print("Não foi possível estabelecer conexão com jogador")
+      print("Não foi possível estabelecer conexão com jogador. Encerrando...")
+      exit()
 
   # UDP
-  elif(protocolo == socket.SOCK_DGRAM): 
+  elif(protocolo == socket.SOCK_DGRAM):
+    print("\nServidor UDP pronto para receber mensagens")
     return sock, porta
-    print("Servidor UDP pronto para receber mensagens")
 
 
 
 
 def conectar_partida(familia, protocolo):
-  destino_ip = input("Digite o endereço IP do computador que está hospedando a partida: ")
+  while True:
+    destino_ip = input("Digite o endereço IP do computador que está hospedando a partida: ")
+    try:
+      dest_ip = ipaddress.ip_address(destino_ip)
+      print(f"Endereço IP válido [{destino_ip}]")
+      break
+    except ValueError:
+       print("Endereço IP inválido. Digite-o corretamente: ")
+       
+
 
   while True:
     destino_porta = input("Digite a porta do socket do computador que está hospedando a partida: ").strip()
@@ -98,29 +114,34 @@ def conectar_partida(familia, protocolo):
     print("-> Porta inválida. Digite apenas números entre 1024 e 65535.")
 
   try:
+    # TCP
     if (protocolo == socket.SOCK_STREAM):
       sock = socket.socket(familia, protocolo)
       sock.connect((str(destino_ip), destino_porta))
       print(f"Conectado ao servidor TCP no IP {destino_ip} na porta {destino_porta}")
       
-
+    # UDP
     elif (protocolo == socket.SOCK_DGRAM):
       sock = socket.socket(familia, protocolo)
       print(f"Conectado ao servidor UDP no IP {destino_ip} na porta {destino_porta}")
     return sock, (destino_ip, destino_porta)
-
+  
+  # mensagem de erro
   except Exception as e:
     print(f"Erro ao conectar ao servidor: {e}")
-    return None, None
+    print("Encerrando...")
+    exit()
+    
   
 
 def enviar_mensagem(sock, dados, protocolo, destino):
     try:
         mensagem = json.dumps(dados).encode('utf-8')
-
+        # TCP
         if protocolo == socket.SOCK_STREAM:
             sock.sendall(mensagem)
 
+        #UDP
         elif protocolo == socket.SOCK_DGRAM:
             sock.sendto(mensagem, destino)
 
@@ -149,40 +170,3 @@ def receber_mensagem(sock, protocolo, buffer_size=4096):
     except Exception as e:
         print(f"Erro ao receber mensagem: {e}")
         return None, None
-
-ip, familia, protocolo, sock = config_rede()
-
-#definir se vai hospedar ou conectar
-esc = input("Você quer hospedar ou conectar a uma partida? (h/c): ").strip().lower()
-if esc == 'h':
-    sock, coisado = hospedar_partida(ip, sock, familia, protocolo)
-    if (protocolo == socket.SOCK_DGRAM):
-        destino_ip = input("Digite o endereço IP do computador que está se conectando ao servidor: ")
-        destino = (destino_ip, coisado)
-    else:
-        destino = coisado
-
-elif esc == 'c':
-    sock, destino = conectar_partida(familia, protocolo)
-
-if sock is None:
-    print("Não foi possível estabelecer conexão. Encerrando.")
-    exit()
-
-# Define quem começa enviando
-turno_envio = True if esc == 'h' else False  # Só o host pode enviar primeiro
-
-while True:
-    if turno_envio:
-        mens = input("Digite a mensagem que deseja enviar: ")
-        enviar_mensagem(sock, {"mensagem": mens}, protocolo, destino)
-        turno_envio = False  # Depois de enviar, espera receber
-
-    else:
-        dados, origem = receber_mensagem(sock, protocolo)
-        if dados:
-            print(f"Mensagem recebida: {dados['mensagem']}")
-        turno_envio = True  # Depois de receber, pode enviar
-            
-
-

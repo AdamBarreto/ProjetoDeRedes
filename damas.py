@@ -1,6 +1,7 @@
 import pygame
 import sys
 import json
+import principal
 
 # Dimensões da janela
 WIDTH, HEIGHT = 800, 800  
@@ -15,7 +16,7 @@ BLACK = (0, 0, 0)            # Peças pretas
 GOLD = (255, 215, 0)         # Cor para coroas das damas
 RED = (255, 0, 0)            # Texto/avisos
 
-COR_LOCAL = WHITE
+COR_LOCAL = principal.COR_LOCAL
 
 # Inicializa o Pygame
 pygame.init()
@@ -113,12 +114,12 @@ class Board:
                 else:
                     self.board[row].append(0)  # Casa vazia
 
-    def draw(self, win, COR_LOCAL, turn): #não precisa do turn
+    def draw(self, win, COR_LOCAL): #não precisa do turn
         # Desenha o tabuleiro e as peças
         self.draw_squares(win)
         for row in range(ROWS):
             for col in range(COLS):
-                draw_row, draw_col = (7 - row, 7 - col) if COR_LOCAL == BLACK else (row, col)
+                draw_row, draw_col = (7 - row, 7 - col) if COR_LOCAL == "BLACK" else (row, col)
                 piece = self.board[row][col]
                 if piece != 0:
                     piece.draw(win, draw_row, draw_col)
@@ -224,7 +225,7 @@ def draw_winner(win, winner):
     pygame.time.delay(3000)
 
 # FUNÇÕES PARA EXPORTAR E IMPORTAR O ESTADO DO JOGO
-def export_board_state(board, turn): #não vai precisar mais do turn
+def export_board_state(board): #não vai precisar mais do turn
     pieces = []
     for row in range(ROWS):
         for col in range(COLS):
@@ -236,29 +237,30 @@ def export_board_state(board, turn): #não vai precisar mais do turn
                     'color': 'white' if piece.color == WHITE else 'black',
                     'king': piece.king
                 })
-    board_state = {
-        'turn': 'white' if turn == WHITE else 'black',    # não precisa mais indicar o turno do jogador, já que
-        'pieces': pieces                                  # já vai ser definido quem vai ser o branco e quem vai ser o preto
+    return {
+        'tipo': 'estado_tabuleiro',
+        'pieces': pieces
     }
 
-    return json.dumps(board_state)
+ # dados = export_board_state(board)
+ # enviar_mensagem(sock, dados, protocolo, destino):
 
-#json_data = export_board_state(board, turn)
+ # aí dps:
+ # dados, origem = receber_mensagem(sock, protocolo) -->
+def import_board_state(board, data):
+    if data is not None and 'pieces' in data: # É pq na jogada inicial não vai ter nada para importar
+        board.board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+        turn = WHITE if COR_LOCAL == "WHITE" else BLACK 
 
-def import_board_state(board, json_data):
-    data = json.loads(json_data)
-    turn = WHITE if data['turn'] == 'white' else BLACK
-
-    board.board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
-    for piece_info in data['pieces']:
-        row = piece_info['row']
-        col = piece_info['col']
-        color = WHITE if piece_info['color'] == 'white' else BLACK
-        piece = Piece(row, col, color)
-        if piece_info['king']:
-            piece.make_king()
-        board.board[row][col] = piece
-    return turn #não precisa mais do turn
+        board.board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+        for piece_info in data['pieces']:
+            row = piece_info['row']
+            col = piece_info['col']
+            color = WHITE if piece_info['color'] == 'white' else BLACK
+            piece = Piece(row, col, color)
+            if piece_info['king']:
+                piece.make_king()
+            board.board[row][col] = piece
 
 #turn = import_board_state(board, json_data)
 
@@ -275,7 +277,7 @@ def main(COR_LOCAL):
 
     while run:
         clock.tick(60)  # Limita FPS a 60
-        board.draw(WIN, COR_LOCAL, turn)  # Desenha o tabuleiro e peças (não precisa do turn --> ajeitar)
+        board.draw(WIN, COR_LOCAL)  # Desenha o tabuleiro e peças (não precisa do turn --> ajeitar)
         draw_turn_indicator(WIN, turn)
         pygame.display.update()
 
@@ -298,7 +300,7 @@ def main(COR_LOCAL):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 row, col = pos[1] // SQUARE_SIZE, pos[0] // SQUARE_SIZE
-                if COR_LOCAL == BLACK:
+                if COR_LOCAL == "BLACK":
                     col, row = 7 - col, 7 - row
 
                 if selected_piece:
@@ -320,6 +322,8 @@ def main(COR_LOCAL):
                         turn = BLACK if turn == WHITE else WHITE
                         selected_piece = None
                         valid_moves = {}
+
+                        
                     else:
                         selected_piece = None
                         valid_moves = {}
