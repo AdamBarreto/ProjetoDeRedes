@@ -1,22 +1,20 @@
 import pygame
 import sys
-import json
-import principal
+import time
 
 # Dimensões da janela
-WIDTH, HEIGHT = 800, 800  
+WIDTH, HEIGHT = 800, 800
 ROWS, COLS = 8, 8  # Tabuleiro de 8x8
 SQUARE_SIZE = WIDTH // COLS  # Tamanho de cada casa do tabuleiro
 
 # Cores utilizadas
 DARK_GREEN = (34, 139, 34)   # Casas Escuras
-LIGHT_GREEN = (144, 238, 144) # Casas Claras)
+LIGHT_GREEN = (144, 238, 144)  # Casas Claras)
 WHITE = (255, 255, 255)      # Peças brancas
 BLACK = (0, 0, 0)            # Peças pretas
 GOLD = (255, 215, 0)         # Cor para coroas das damas
 RED = (255, 0, 0)            # Texto/avisos
 
-COR_LOCAL = principal.COR_LOCAL
 
 # Inicializa o Pygame
 pygame.init()
@@ -29,6 +27,8 @@ pygame.display.set_caption("Jogo de Damas")
 FONT = pygame.font.SysFont("Arial", 36)
 
 # CLASSE DAS PEÇAS
+
+
 class Piece:
     PADDING = 15   # Espaço interno para desenhar a peça
     OUTLINE = 2    # Espessura do contorno
@@ -53,10 +53,10 @@ class Piece:
         self.row = row
         self.col = col
 
-    def draw(self, win, row=None, col=None): 
+    def draw(self, win, row=None, col=None):
         draw_row = row if row is not None else self.row
         draw_col = col if col is not None else self.col
-        
+
         # gambiarra para inverter a posição das peças
 
         # Calcula o raio do círculo (peça)
@@ -85,6 +85,8 @@ class Piece:
             )
 
 # CLASSE DO TABULEIRO
+
+
 class Board:
     def __init__(self):
         self.board = []       # Matriz do tabuleiro
@@ -95,7 +97,8 @@ class Board:
         for row in range(ROWS):
             for col in range(COLS):
                 color = LIGHT_GREEN if (row + col) % 2 == 0 else DARK_GREEN
-                pygame.draw.rect(win, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                pygame.draw.rect(win, color, (col * SQUARE_SIZE,
+                                 row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     def create_board(self):
         # Coloca as peças nas posições iniciais
@@ -114,12 +117,13 @@ class Board:
                 else:
                     self.board[row].append(0)  # Casa vazia
 
-    def draw(self, win, COR_LOCAL): #não precisa do turn
+    def draw(self, win, COR_LOCAL):  # não precisa do turn
         # Desenha o tabuleiro e as peças
         self.draw_squares(win)
         for row in range(ROWS):
             for col in range(COLS):
-                draw_row, draw_col = (7 - row, 7 - col) if COR_LOCAL == "BLACK" else (row, col)
+                draw_row, draw_col = (
+                    7 - row, 7 - col) if COR_LOCAL == "BLACK" else (row, col)
                 piece = self.board[row][col]
                 if piece != 0:
                     piece.draw(win, draw_row, draw_col)
@@ -166,7 +170,8 @@ class Board:
                     jump_r, jump_c = r + d[0], c + d[1]
                     while 0 <= jump_r < ROWS and 0 <= jump_c < COLS:
                         if self.board[jump_r][jump_c] == 0:
-                            capture_moves[(jump_r, jump_c)] = [self.board[r][c]]
+                            capture_moves[(jump_r, jump_c)] = [
+                                self.board[r][c]]
                             if not piece.king:
                                 break
                         else:
@@ -187,6 +192,8 @@ class Board:
         return capture_moves if capture_moves else moves
 
 # FUNÇÕES AUXILIARES
+
+
 def get_all_valid_moves(board, color):
     # Retorna todos os movimentos possíveis para todas as peças de uma cor
     all_moves = {}
@@ -210,22 +217,27 @@ def get_all_valid_moves(board, color):
 
     return all_moves, capture_available
 
+
 def draw_turn_indicator(win, turn):
     # Exibe na tela de quem é a vez
     text = "Vez das Brancas" if turn == WHITE else "Vez das Pretas"
     img = FONT.render(text, True, RED)
     win.blit(img, (10, 10))
 
+
 def draw_winner(win, winner):
     # Mostra mensagem de vencedor e pausa 3 segundos
     text = "Brancas venceram!" if winner == WHITE else "Pretas venceram!"
     img = FONT.render(text, True, RED)
-    win.blit(img, (WIDTH // 2 - img.get_width() // 2, HEIGHT // 2 - img.get_height() // 2))
+    win.blit(img, (WIDTH // 2 - img.get_width() //
+             2, HEIGHT // 2 - img.get_height() // 2))
     pygame.display.update()
     pygame.time.delay(3000)
 
 # FUNÇÕES PARA EXPORTAR E IMPORTAR O ESTADO DO JOGO
-def export_board_state(board): #não vai precisar mais do turn
+
+
+def export_board_state(board):  # não vai precisar mais do turn
     pieces = []
     for row in range(ROWS):
         for col in range(COLS):
@@ -247,10 +259,12 @@ def export_board_state(board): #não vai precisar mais do turn
 
  # aí dps:
  # dados, origem = receber_mensagem(sock, protocolo) -->
+
+
 def import_board_state(board, data):
-    if data is not None and 'pieces' in data: # É pq na jogada inicial não vai ter nada para importar
+    if data is not None and 'pieces' in data:  # É pq na jogada inicial não vai ter nada para importar
         board.board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
-        turn = WHITE if COR_LOCAL == "WHITE" else BLACK 
+        turn = WHITE if COR_LOCAL == "WHITE" else BLACK
 
         board.board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
         for piece_info in data['pieces']:
@@ -262,80 +276,82 @@ def import_board_state(board, data):
                 piece.make_king()
             board.board[row][col] = piece
 
-#turn = import_board_state(board, json_data)
+# turn = import_board_state(board, json_data)
 
 
 # FUNÇÃO PRINCIPAL DO JOGO
-def main(COR_LOCAL):
-    run = True
+def main(COR_LOCAL, tranca, run):
     clock = pygame.time.Clock()
     board = Board()      # Cria o tabuleiro
-    turn = WHITE         # Brancas começam
+    turn = "WHITE"         # Brancas começam
     selected_piece = None
     valid_moves = {}
     capture_forced = False
 
     while run:
-        clock.tick(60)  # Limita FPS a 60
-        board.draw(WIN, COR_LOCAL)  # Desenha o tabuleiro e peças (não precisa do turn --> ajeitar)
-        draw_turn_indicator(WIN, turn)
-        pygame.display.update()
+        with tranca:
+            clock.tick(60)  # Limita FPS a 60
+            # Desenha o tabuleiro e peças (não precisa do turn --> ajeitar)
+            board.draw(WIN, COR_LOCAL)
+            draw_turn_indicator(WIN, turn)
+            pygame.display.update()
 
-        # Obtém todos os movimentos possíveis para a cor atual
-        all_moves, capture_forced = get_all_valid_moves(board, turn)
+            # Obtém todos os movimentos possíveis para a cor atual
+            all_moves, capture_forced = get_all_valid_moves(board, turn)
 
-        # Se não houver movimentos, fim de jogo
-        if not all_moves:
-            draw_winner(WIN, BLACK if turn == WHITE else WHITE) 
-            run = False
-            continue
-
-        # Processa eventos
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            # Se não houver movimentos, fim de jogo
+            if not all_moves:
+                draw_winner(WIN, "BLACK" if turn == "WHITE" else "WHITE")
                 run = False
-                pygame.quit()
-                sys.exit()
+                continue
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                row, col = pos[1] // SQUARE_SIZE, pos[0] // SQUARE_SIZE
-                if COR_LOCAL == "BLACK":
-                    col, row = 7 - col, 7 - row
+            # Processa eventos
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                    pygame.quit()
+                    sys.exit()
 
-                if selected_piece:
-                    if (row, col) in valid_moves:
-                        # Move a peça
-                        board.move(selected_piece, row, col)
+                if event.type == pygame.MOUSEBUTTONDOWN and turn == COR_LOCAL:
+                    pos = pygame.mouse.get_pos()
+                    row, col = pos[1] // SQUARE_SIZE, pos[0] // SQUARE_SIZE
+                    if COR_LOCAL == "BLACK":
+                        col, row = 7 - col, 7 - row
 
-                        # Se capturou peça
-                        if valid_moves[(row, col)]:
-                            board.remove(valid_moves[(row, col)])
-                            valid_moves = board.get_valid_moves(selected_piece)
-                            valid_moves = {pos: capt for pos, capt in valid_moves.items() if capt}
+                    if selected_piece:
+                        if (row, col) in valid_moves:
+                            # Move a peça
+                            board.move(selected_piece, row, col)
 
-                            # Se ainda puder capturar continua a jogada
-                            if valid_moves:
-                                continue
+                            # Se capturou peça
+                            if valid_moves[(row, col)]:
+                                board.remove(valid_moves[(row, col)])
+                                valid_moves = board.get_valid_moves(
+                                    selected_piece)
+                                valid_moves = {pos: capt for pos,
+                                               capt in valid_moves.items() if capt}
 
-                        # Troca a vez
-                        turn = BLACK if turn == WHITE else WHITE
-                        selected_piece = None
-                        valid_moves = {}
+                                # Se ainda puder capturar continua a jogada
+                                if valid_moves:
+                                    continue
 
-                        
+                            # Troca a vez
+                            turn = "BLACK" if turn == "WHITE" else "WHITE"
+                            selected_piece = None
+                            valid_moves = {}
+                            # exporta os dados depois de finalizar a jogada
+
+                        else:
+                            selected_piece = None
+                            valid_moves = {}
                     else:
-                        selected_piece = None
-                        valid_moves = {}
-                else:
-                    # Seleciona peça
-                    piece = board.get_piece(row, col)
-                    if piece != 0 and piece.color == turn:
-                        moves = board.get_valid_moves(piece)
-                        if capture_forced:
-                            moves = {pos: capt for pos, capt in moves.items() if capt}
-                        if moves:
-                            selected_piece = piece
-                            valid_moves = moves
-
-main(COR_LOCAL)
+                        # Seleciona peça
+                        piece = board.get_piece(row, col)
+                        if piece != 0 and piece.color == turn:
+                            moves = board.get_valid_moves(piece)
+                            if capture_forced:
+                                moves = {pos: capt for pos,
+                                         capt in moves.items() if capt}
+                            if moves:
+                                selected_piece = piece
+                                valid_moves = moves
