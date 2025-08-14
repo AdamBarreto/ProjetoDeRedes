@@ -326,6 +326,7 @@ class JogoDamas:
                                 self.board.remove(valid_moves[(row, col)])
                                 valid_moves = self.board.get_valid_moves(selected_piece)
                                 valid_moves = {pos: capt for pos, capt in valid_moves.items() if capt}
+                                self.data = export_board_state(self.board)
                                 if valid_moves:
                                     continue
 
