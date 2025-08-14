@@ -30,6 +30,10 @@ if sock is None:
 
 else:
     damas = damas.JogoDamas()
+    if COR_LOCAL == "BLACK":
+        dados_recebidos, origem = Redes.receber_mensagem(sock, protocolo)
+        if dados recebidos:
+            damas.import_board_state(damas.board, dados_recebidos)
     damas.main(COR_LOCAL)
     while damas.run:
         if damas.turn == COR_LOCAL:
