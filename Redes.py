@@ -16,13 +16,12 @@ def config_rede():
         except ValueError:
             print("Endereço IP inválido. Digite-o corretamente")
   while True:
-    t_ip = input("\nEscolha a versão do protocolo de internet (IP) para a criação do socket, digite 'ipv4' ou 'ipv6': ").lower().strip()
-
-    if (t_ip == "ipv4" and isinstance(ip, ipaddress.IPv4Address)):
+    
+    if (isinstance(ip, ipaddress.IPv4Address)):
             familia = socket.AF_INET
             break
 
-    elif (t_ip == "ipv6" and isinstance(ip, ipaddress.IPv6Address)):
+    elif (isinstance(ip, ipaddress.IPv6Address)):
             familia = socket.AF_INET6
             break
 
@@ -99,7 +98,7 @@ def conectar_partida(familia, protocolo):
     destino_ip = input("Digite o endereço IP do computador que está hospedando a partida: ")
     try:
       dest_ip = ipaddress.ip_address(destino_ip)
-      print(f"Endereço IP válido [{destino_ip}]")
+      print(f"Endereço IP válido [{dest_ip}]")
       break
     except ValueError:
        print("Endereço IP inválido. Digite-o corretamente: ")

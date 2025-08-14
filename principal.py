@@ -29,19 +29,25 @@ if sock is None:
 
 
 else:
-    damas = damas.JogoDamas()
-    damas.main(COR_LOCAL)
-    while damas.run:
-        if damas.turn == COR_LOCAL:
-                    dados = damas.retornar_dado()
-                    if dados: 
+    dama = damas.JogoDamas()
+    dama.main(COR_LOCAL)
+    while dama.run:
+        if dama.turn == COR_LOCAL:
+            while True:
+                    dados = dama.retornar_dado()
+                    if dados:
                         Redes.enviar_mensagem(sock, dados, protocolo, destino)  # Envia
-                        
+                        dados = {}
+                        if (dama.turn != COR_LOCAL):
+                            break
         else:
-            # Espera jogada do adversário
-            dados_recebidos, origem = Redes.receber_mensagem(sock, protocolo)
-            if dados_recebidos:
-                damas.import_board_state(damas.board, dados_recebidos)  # Atualiza tabuleiro
-        
+            while True:
+                # Espera jogada do adversário
+                dados_recebidos, origem = Redes.receber_mensagem(sock, protocolo)
+                if dados_recebidos:
+                    dama.import_board_state(dama.board, dados_recebidos)  # Atualiza tabuleiro
+                    dados_recebidos = {}
+                    if(dama.turn == COR_LOCAL):
+                        break
 
 sys.exit()

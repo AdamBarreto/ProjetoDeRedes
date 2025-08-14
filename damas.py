@@ -1,6 +1,4 @@
 import pygame
-import sys
-import time
 
 # Dimensões da janela
 WIDTH, HEIGHT = 800, 800
@@ -122,8 +120,7 @@ class Board:
         self.draw_squares(win)
         for row in range(ROWS):
             for col in range(COLS):
-                draw_row, draw_col = (
-                    7 - row, 7 - col) if COR_LOCAL == "BLACK" else (row, col)
+                draw_row, draw_col = (7 - row, 7 - col) if COR_LOCAL == "BLACK" else (row, col)
                 piece = self.board[row][col]
                 if piece != 0:
                     piece.draw(win, draw_row, draw_col)
@@ -194,7 +191,8 @@ class Board:
 # FUNÇÕES AUXILIARES
 
 
-def get_all_valid_moves(board, color):
+def get_all_valid_moves(board, turn):
+    color = WHITE if turn == "WHITE" else BLACK
     # Retorna todos os movimentos possíveis para todas as peças de uma cor
     all_moves = {}
     capture_available = False
@@ -220,14 +218,14 @@ def get_all_valid_moves(board, color):
 
 def draw_turn_indicator(win, turn):
     # Exibe na tela de quem é a vez
-    text = "Vez das Brancas" if turn == WHITE else "Vez das Pretas"
+    text = "Vez das Brancas" if turn == "WHITE" else "Vez das Pretas"
     img = FONT.render(text, True, RED)
     win.blit(img, (10, 10))
 
 
 def draw_winner(win, winner):
     # Mostra mensagem de vencedor e pausa 3 segundos
-    text = "Brancas venceram!" if winner == WHITE else "Pretas venceram!"
+    text = "Brancas venceram!" if winner == "WHITE" else "Pretas venceram!"
     img = FONT.render(text, True, RED)
     win.blit(img, (WIDTH // 2 - img.get_width() //
              2, HEIGHT // 2 - img.get_height() // 2))
@@ -256,9 +254,7 @@ def export_board_state(board):
 
 
 def import_board_state(board, data):
-    if data is not None and 'pieces' in data:  # É pq na jogada inicial não vai ter nada para importar
-        board.board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
-
+    if data is not None and 'pieces' in data:
         board.board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
         for piece_info in data['pieces']:
             row = piece_info['row']
@@ -269,8 +265,8 @@ def import_board_state(board, data):
                 piece.make_king()
             board.board[row][col] = piece
 
-# FUNÇÃO PRINCIPAL DO JOGO
-# damas.py
+
+# CLASSE PRINCIPAL DO JOGO
 
 class JogoDamas:
     def __init__(self):
@@ -286,7 +282,7 @@ class JogoDamas:
 
         clock = pygame.time.Clock()
         self.board = Board()
-        self.turn = COR_LOCAL
+        self.turn = "WHITE"
         selected_piece = None
         valid_moves = {}
         capture_forced = False
@@ -297,8 +293,7 @@ class JogoDamas:
             draw_turn_indicator(WIN, self.turn)
             pygame.display.update()
             
-            if(COR_LOCAL == self.turn):
-                all_moves, capture_forced = get_all_valid_moves(self.board, self.turn)
+            all_moves, capture_forced = get_all_valid_moves(self.board, self.turn)
 
             if not all_moves:
                 draw_winner(WIN, "BLACK" if self.turn == "WHITE" else "WHITE")
@@ -320,12 +315,13 @@ class JogoDamas:
                     if selected_piece:
                         if (row, col) in valid_moves:
                             self.board.move(selected_piece, row, col)
-                            self.data = export_board_state(self.board)
+                            self.data = export_board_state(self.board) #exporta o dado para a função retornar_dado
 
                             if valid_moves[(row, col)]:
                                 self.board.remove(valid_moves[(row, col)])
                                 valid_moves = self.board.get_valid_moves(selected_piece)
                                 valid_moves = {pos: capt for pos, capt in valid_moves.items() if capt}
+                                self.data = export_board_state(self.board) #exporta o dado para a função retornar_dado
                                 if valid_moves:
                                     continue
 
