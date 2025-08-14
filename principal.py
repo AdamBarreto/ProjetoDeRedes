@@ -38,7 +38,8 @@ else:
                     if dados: 
                         Redes.enviar_mensagem(sock, dados, protocolo, destino)  # Envia
                         dados = {}
-                        break                        
+                        if (damas.turn != COR_LOCAL):
+                            break                        
         else:
             while True:
                 # Espera jogada do adversário
@@ -46,6 +47,7 @@ else:
                 if dados_recebidos:
                     damas.import_board_state(damas.board, dados_recebidos)  # Atualiza tabuleiro
                     dados_recebidos = {}
-                    break
+                    if(damas.turn == COR_LOCAL):
+                        break
         
 sys.exit()
