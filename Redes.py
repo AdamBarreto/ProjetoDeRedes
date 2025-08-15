@@ -86,9 +86,23 @@ def hospedar_partida(host_ip, sock, familia, protocolo):
       exit()
 
   # UDP
-  elif(protocolo == socket.SOCK_DGRAM):
-    print("\nServidor UDP pronto para receber mensagens")
-    return sock, porta
+  elif protocolo == socket.SOCK_DGRAM:
+    print("\nServidor UDP pronto para receber mensagens.")
+
+    # Espera a primeira mensagem do cliente para capturar IP e porta
+    print("Aguardando mensagem inicial do cliente UDP...")
+    mensagem, origem = sock.recvfrom(4096)
+    print(f"Mensagem inicial recebida de {origem}")
+    
+    try:
+        dados = json.loads(mensagem.decode('utf-8'))
+        print("\nMensagem inicial decodificada com sucesso.")
+    except Exception as e:
+        print(f"\nErro ao decodificar mensagem inicial: {e}")
+        dados = None
+
+    return sock, origem  # origem é uma tupla (ip, porta)
+
 
 
 
@@ -123,7 +137,7 @@ def conectar_partida(familia, protocolo):
     elif (protocolo == socket.SOCK_DGRAM):
       sock = socket.socket(familia, protocolo)
       print(f"Conectado ao servidor UDP no IP {destino_ip} na porta {destino_porta}")
-    return sock, (destino_ip, destino_porta)
+    return sock, (str(destino_ip), destino_porta)
   
   # mensagem de erro
   except Exception as e:

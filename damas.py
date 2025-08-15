@@ -1,27 +1,24 @@
-import socket
 import Redes
 import sys
-
+import socket
 # Configurações de rede
 ip, familia, protocolo, sock = Redes.config_rede()
 
 # definir se vai hospedar ou conectar
 while True:
-    esc = input("\nVocê quer hospedar ou conectar a uma partida? (h/c): ").strip().lower()
-    if esc == 'h':
+    esc = input("Você quer hospedar ou conectar a uma partida? (h/c): ").strip().lower()
+    
+    if (esc == 'h'):
         COR_LOCAL = "WHITE"
-        sock, coisado = Redes.hospedar_partida(ip, sock, familia, protocolo)
-        if (protocolo == socket.SOCK_DGRAM):
-            destino_ip = input(
-                "Digite o endereço IP do computador que está se conectando ao servidor: ")
-            destino = (destino_ip, coisado)
-        else:
-            destino = coisado
+        sock, destino = Redes.hospedar_partida(ip, sock, familia, protocolo)
         break
 
-    elif esc == 'c':
+    elif (esc == 'c'):
         COR_LOCAL = "BLACK"
         sock, destino = Redes.conectar_partida(familia, protocolo)
+        if protocolo == socket.SOCK_DGRAM:    
+            Redes.enviar_mensagem(sock, {"tipo": "conexao"}, protocolo, destino)
+
         break
     else: print("Digite corretamente.")
 
