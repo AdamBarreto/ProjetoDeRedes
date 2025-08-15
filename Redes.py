@@ -156,12 +156,16 @@ def receber_mensagem(sock, protocolo, buffer_size=4096):
     try:
         if protocolo == socket.SOCK_STREAM:
             mensagem = sock.recv(buffer_size)
+            if not mensagem:
+               return None, None
             dados = json.loads(mensagem.decode('utf-8'))
             print("Mensagem recebida com sucesso.")
             return dados, None
 
         elif protocolo == socket.SOCK_DGRAM:
             mensagem, origem = sock.recvfrom(buffer_size)
+            if not mensagem:
+              return None, origem
             dados = json.loads(mensagem.decode('utf-8'))
             print(f"Mensagem recebida de {origem}")
             return dados, origem

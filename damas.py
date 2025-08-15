@@ -1,5 +1,35 @@
-import pygame
+import socket
+import Redes
+import sys
 
+# Configurações de rede
+ip, familia, protocolo, sock = Redes.config_rede()
+
+# definir se vai hospedar ou conectar
+while True:
+    esc = input("\nVocê quer hospedar ou conectar a uma partida? (h/c): ").strip().lower()
+    if esc == 'h':
+        COR_LOCAL = "WHITE"
+        sock, coisado = Redes.hospedar_partida(ip, sock, familia, protocolo)
+        if (protocolo == socket.SOCK_DGRAM):
+            destino_ip = input(
+                "Digite o endereço IP do computador que está se conectando ao servidor: ")
+            destino = (destino_ip, coisado)
+        else:
+            destino = coisado
+        break
+
+    elif esc == 'c':
+        COR_LOCAL = "BLACK"
+        sock, destino = Redes.conectar_partida(familia, protocolo)
+        break
+    else: print("Digite corretamente.")
+
+if sock is None:
+    print("\nNão foi possível estabelecer conexão. Encerrando.")
+    exit()
+
+import pygame    
 # Dimensões da janela
 WIDTH, HEIGHT = 800, 800
 ROWS, COLS = 8, 8  # Tabuleiro de 8x8
@@ -235,7 +265,7 @@ def draw_winner(win, winner):
 # FUNÇÕES PARA EXPORTAR E IMPORTAR O ESTADO DO JOGO
 
 
-def export_board_state(board):  
+def export_board_state(board, turn):  
     pieces = []
     for row in range(ROWS):
         for col in range(COLS):
@@ -249,7 +279,8 @@ def export_board_state(board):
                 })
     return {
         'tipo': 'estado_tabuleiro',
-        'pieces': pieces
+        'pieces': pieces,
+        'turn': turn
     }
 
 
@@ -268,78 +299,87 @@ def import_board_state(board, data):
 
 # CLASSE PRINCIPAL DO JOGO
 
-class JogoDamas:
-    def __init__(self):
-        self.data = None
-        self.board = None
-        self.turn = "WHITE"
-        self.run = True
 
-    def main(self, COR_LOCAL):
-        import pygame, sys
-        from damas import Board  # ou onde estiver sua classe Board
-        from damas import draw_turn_indicator, draw_winner, get_all_valid_moves, export_board_state
+def main(COR_LOCAL, sock, protocolo, destino):
 
-        clock = pygame.time.Clock()
-        self.board = Board()
-        self.turn = "WHITE"
-        selected_piece = None
-        valid_moves = {}
-        capture_forced = False
+    clock = pygame.time.Clock()
+    board = Board()
+    turn = "WHITE"
+    run = True
+    data = None
+    selected_piece = None
+    valid_moves = {}
+    capture_forced = False
 
-        while self.run:
-            clock.tick(60)
-            self.board.draw(WIN, COR_LOCAL)
-            draw_turn_indicator(WIN, self.turn)
-            pygame.display.update()
-            
-            all_moves, capture_forced = get_all_valid_moves(self.board, self.turn)
+    while run:
 
-            if not all_moves:
-                draw_winner(WIN, "BLACK" if self.turn == "WHITE" else "WHITE")
-                self.run = False
-                continue
+        clock.tick(60)
+        board.draw(WIN, COR_LOCAL)
+        draw_turn_indicator(WIN, turn)
+        pygame.display.update()
+        
+        # Receber estado do tabuleiro após cada jogada
+        if turn != COR_LOCAL:
+            dados_recebidos, origem = Redes.receber_mensagem(sock, protocolo)
+            if dados_recebidos:
+                turn = dados_recebidos['turn']
+                import_board_state(board, dados_recebidos)
+                
 
+        all_moves, capture_forced = get_all_valid_moves(board, turn)
+
+        if not all_moves:
+            draw_winner(WIN, "BLACK" if turn == "WHITE" else "WHITE")
+            run = False
+            continue
+
+        else:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.run = False
+                    run = False
                     pygame.quit()
                     sys.exit()
 
-                if event.type == pygame.MOUSEBUTTONDOWN and self.turn == COR_LOCAL:
+                if event.type == pygame.MOUSEBUTTONDOWN and turn == COR_LOCAL:
                     pos = pygame.mouse.get_pos()
                     row, col = pos[1] // SQUARE_SIZE, pos[0] // SQUARE_SIZE
                     if COR_LOCAL == "BLACK":
                         col, row = 7 - col, 7 - row
+                    print("Clique detectado em: ", row, col)
 
                     if selected_piece:
                         if (row, col) in valid_moves:
-                            self.board.move(selected_piece, row, col)
-                            self.data = export_board_state(self.board) #exporta o dado para a função retornar_dado
-
+                            data = None
+                            board.move(selected_piece, row, col)
                             if valid_moves[(row, col)]:
-                                self.board.remove(valid_moves[(row, col)])
-                                valid_moves = self.board.get_valid_moves(selected_piece)
+                                board.remove(valid_moves[(row, col)])
+                                valid_moves = board.get_valid_moves(selected_piece)
                                 valid_moves = {pos: capt for pos, capt in valid_moves.items() if capt}
-                                self.data = export_board_state(self.board) #exporta o dado para a função retornar_dado
-                                if valid_moves:
-                                    continue
+                                print("Movimentos obrigatórios restantes:", valid_moves)
 
-                            self.turn = "BLACK" if self.turn == "WHITE" else "WHITE"
+                                if valid_moves:
+                                    continue  # Continua jogando com a mesma peça
+
+                            # Troca de turno
                             selected_piece = None
                             valid_moves = {}
+                            turn = "WHITE" if turn == "BLACK" else "BLACK"
+                            data = export_board_state(board, turn)
+                            Redes.enviar_mensagem(sock, data, protocolo, destino)
+                            data = None
                         else:
                             selected_piece = None
                             valid_moves = {}
                     else:
-                        piece = self.board.get_piece(row, col)
-                        if piece != 0 and piece.color == self.turn:
-                            moves = self.board.get_valid_moves(piece)
+                        piece = board.get_piece(row, col)
+                        turno = WHITE if turn == "WHITE" else BLACK
+                        if piece != 0 and piece.color == turno:
+                            moves = board.get_valid_moves(piece)
                             if capture_forced:
                                 moves = {pos: capt for pos, capt in moves.items() if capt}
                             if moves:
                                 selected_piece = piece
                                 valid_moves = moves
 
-def retornar_dado(self):
-    return self.data
+
+main(COR_LOCAL, sock, protocolo, destino)
