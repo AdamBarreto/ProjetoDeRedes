@@ -1,5 +1,5 @@
 # Jogo de damas
-### É um jogo de damas, onde é necessário ter dois computadores para se conectarem através de um socket, um dos jogadores pode hospedar a partida e outro se conectar, para assim possibilitar que duas pessoas joguem. Com suporte à IPv6 e IPv4, funciona com os protocolos UDP e TCP.
+### O Projeto em questão, trata-se da construção de um jogo de damas virtual, onde é necessário ter dois computadores para se conectarem através de um socket, um dos jogadores pode hospedar a partida e outro se conectar, para assim possibilitar que duas pessoas joguem. Portanto, trata-se de uma comunicação P2P que tem suporte à IPv6 e IPv4, e funciona com os protocolos da Camada de transporte UDP e TCP.
 
 ## Requisitos para jogar
 + Ter o python com uma versão compatível para o seu computador. Site do python para download: https://www.python.org/
@@ -7,14 +7,14 @@
 + Os dois dispositivos devem estar conectados na mesma rede local
 
 ## Como jogar?
-### Abra um terminal, pode ser o cmd do seu computador, conectado à internet escreva: pip install pygame. Depois, inicie a classe damas.py.
+### Abra o terminal do seu computador - CMD, Power Shell - e estando conectado à internet digite e aperte Enter: pip install pygame. Esse procedimento é necessário para a instalação do pygame, biblioteca python necessária na execução do jogo. Depois, inicialize a classe damas.py.
 ### Para jogar o jogo basta clicar com o mouse na peça que deseja mover, logo em seguida o local desejado. É isso, você aprendeu a jogar o nosso jogo de damas, o resto são regras do jogo de damas convencional.
 <br>
 
 
 ## Componentes do projeto
 <table>
- <tr>
+ <tr align = "center">
   <td> Adam</td>
   <td>Alexandre</td>
   <td>João Gabriel</td>
