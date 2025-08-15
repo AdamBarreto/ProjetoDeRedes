@@ -7,7 +7,7 @@
 + Os dois dispositivos devem estar conectados na mesma rede local
 
 ## Como jogar?
-### Abra um terminal, pode ser o cmd do seu computador, conectado à internet escreva: pip install pygame.
+### Abra um terminal, pode ser o cmd do seu computador, conectado à internet escreva: pip install pygame. Depois, inicie a classe damas.py.
 ### Para jogar o jogo basta clicar com o mouse na peça que deseja mover, logo em seguida o local desejado. É isso, você aprendeu a jogar o nosso jogo de damas, o resto são regras do jogo de damas convencional.
 <br>
 
