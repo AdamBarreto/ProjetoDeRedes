@@ -47,11 +47,21 @@ Formato JSON:
 {
   "tipo": "estado_tabuleiro",
   "pieces": [
-	{
-  	"row": <linha>,
-  	"col": <coluna>,
-  	"color": "white" | "black",
-  	"king": true | false
-	}]
+    {
+      "row": 2,
+      "col": 3,
+      "color": "white",
+      "king": false
+    },
+    {
+      "row": 5,
+      "col": 6,
+      "color": "black",
+      "king": true
+    }
+    // ... outras peças
+  ],
+  "turn": "white"
+}
 
 Esses valores representam as informações de cada peça, localização no tabuleiro, sua cor, e se é dama ou não. O jogador realiza uma jogada e o estado do tabuleiro é exportado usando a função ‘export_board_state’. Em seguida, o estado é enviado ao outro jogador por meio da função ‘enviar_mensagem’. O jogador receptor utiliza ‘receber_mensagem’ para obter o estado e atualiza o tabuleiro com ‘import_board_state’. O jogo continua até que um dos jogadores fique sem jogadas possíveis, então o jogo vai mostrar quem venceu.
