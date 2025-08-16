@@ -32,7 +32,6 @@
 ## Camada de aplicação 
 ### 
 Um protocolo de camada de aplicação é um conjunto de regras que define como os dados são formatados e trocados entre aplicações que se comunicam por meio de uma rede. No contexto deste projeto, o protocolo especifica como os clientes do jogo de damas trocam informações sobre o estado do tabuleiro, jogadas realizadas e mensagens de controle.
-#fazer o diagrama simples
 
 2.1. Formato das Mensagens
 As mensagens são codificadas em formato JSON e enviadas por meio de conexões TCP ou UDP, conforme a escolha do usuário. A estrutura das mensagens permite a representação clara e organizada do estado do jogo.
