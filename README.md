@@ -30,7 +30,7 @@
 </br>
 
 ## Camada de aplicação 
-### 2. Arquitetura de Solução
+### 
 Um protocolo de camada de aplicação é um conjunto de regras que define como os dados são formatados e trocados entre aplicações que se comunicam por meio de uma rede. No contexto deste projeto, o protocolo especifica como os clientes do jogo de damas trocam informações sobre o estado do tabuleiro, jogadas realizadas e mensagens de controle.
 #fazer o diagrama simples
 
